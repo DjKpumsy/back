@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 },
     referralCount: { type: Number, default: 0 },
-    coinsToAdd: { type: Number, default: 1 } // Add coinsToAdd field
+    coinsToAdd: { type: Number, default: 1 }  // Add the coinsToAdd field
 });
 
 const User = mongoose.model('User', UserSchema);
@@ -39,7 +39,7 @@ app.post('/addPoints', async (req, res) => {
     const { telegramId } = req.body;
     const user = await User.findOne({ telegramId });
     if (user) {
-        user.points += user.coinsToAdd; // Use coinsToAdd value
+        user.points += user.coinsToAdd;
         await user.save();
         res.json({ points: user.points });
     } else {
@@ -64,10 +64,16 @@ app.post('/referral', async (req, res) => {
 app.post('/boost', async (req, res) => {
     const { telegramId } = req.body;
     const user = await User.findOne({ telegramId });
+
     if (user) {
-        user.coinsToAdd += 1; // Increment coinsToAdd by 1
-        await user.save();
-        res.json({ coinsToAdd: user.coinsToAdd });
+        if (user.points >= 50) {
+            user.coinsToAdd += 1;
+            user.points -= 50;
+            await user.save();
+            res.json({ coinsToAdd: user.coinsToAdd, points: user.points });
+        } else {
+            res.status(400).send('Not enough points');
+        }
     } else {
         res.status(404).send('User not found');
     }
