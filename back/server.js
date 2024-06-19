@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 },
     referralCount: { type: Number, default: 0 },
-    coinsToAdd: { type: Number, default: 1 }  // Add the coinsToAdd field
+    coinsToAdd: { type: Number, default: 1 }
 });
 
 const User = mongoose.model('User', UserSchema);
@@ -74,6 +74,19 @@ app.post('/boost', async (req, res) => {
         } else {
             res.status(400).send('Not enough points');
         }
+    } else {
+        res.status(404).send('User not found');
+    }
+});
+
+// New endpoint to handle task completion
+app.post('/completeTask', async (req, res) => {
+    const { telegramId, points } = req.body;
+    const user = await User.findOne({ telegramId });
+    if (user) {
+        user.points += points;
+        await user.save();
+        res.json({ points: user.points });
     } else {
         res.status(404).send('User not found');
     }
