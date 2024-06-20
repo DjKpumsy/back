@@ -32,7 +32,7 @@ app.post('/auth', async (req, res) => {
     if (!user) {
         user = new User({ telegramId, username, ref_by: referrerId });
         await user.save();
-        
+
         // Update the referrer's referral count if referrerId is provided
         if (referrerId) {
             const referrer = await User.findOne({ telegramId: referrerId });
@@ -126,7 +126,7 @@ app.post('/getDownlines', async (req, res) => {
     const { referrerId } = req.body;
     try {
         const downlines = await User.find({ ref_by: referrerId });
-        const totalPoints = downlines.reduce((sum, downline) => sum + downline.points, 0);
+        const totalPoints = downlines.length * 200;  // Calculate total points based on the number of downlines
         res.json({ downlines, totalPoints });
     } catch (error) {
         res.status(500).send('Error fetching downlines');
