@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
 const User = mongoose.model('User', UserSchema);
 
 app.post('/auth', async (req, res) => {
-    const { telegramId, username, referrerId } = req.body;  // Capture referrerId from request
+    const { telegramId, username, referrerId } = req.body;
 
     let user = await User.findOne({ telegramId });
     if (!user) {
@@ -38,6 +38,7 @@ app.post('/auth', async (req, res) => {
             const referrer = await User.findOne({ telegramId: referrerId });
             if (referrer) {
                 referrer.referralCount += 1;
+                referrer.points += 200; // Add 200 points for each new referral
                 await referrer.save();
             }
         }
@@ -120,6 +121,18 @@ app.post('/getUser', async (req, res) => {
         res.status(404).send('User not found');
     }
 });
+
+app.post('/getDownlines', async (req, res) => {
+    const { referrerId } = req.body;
+    try {
+        const downlines = await User.find({ ref_by: referrerId });
+        const totalPoints = downlines.reduce((sum, downline) => sum + downline.points, 0);
+        res.json({ downlines, totalPoints });
+    } catch (error) {
+        res.status(500).send('Error fetching downlines');
+    }
+});
+
 
 
 
