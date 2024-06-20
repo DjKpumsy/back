@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 },
     referralCount: { type: Number, default: 0 },
-    coinsToAdd: { type: Number, default: 1 },
+    coinsToAdd: { type: Number, default: 5 },
     completedTasks: { type: [Number], default: [] },  // Add completedTasks field
     ref_by: { type: String, default: 0 }  // New field to store referrer ID
 });
