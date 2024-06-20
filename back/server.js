@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
     referralCount: { type: Number, default: 0 },
     coinsToAdd: { type: Number, default: 5 },
     completedTasks: { type: [Number], default: [] },  // Add completedTasks field
-    ref_by: { type: String}  // New field to store referrer ID
+    ref_by: { type: String, default: null }
 });
 
 const User = mongoose.model('User', UserSchema);
