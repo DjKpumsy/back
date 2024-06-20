@@ -18,7 +18,8 @@ const UserSchema = new mongoose.Schema({
     username: String,
     points: { type: Number, default: 0 },
     referralCount: { type: Number, default: 0 },
-    coinsToAdd: { type: Number, default: 1 }
+    coinsToAdd: { type: Number, default: 1 },
+    completedTasks: { type: [Number], default: [] }  // Add completedTasks field
 });
 
 const User = mongoose.model('User', UserSchema);
@@ -81,16 +82,36 @@ app.post('/boost', async (req, res) => {
 
 // New endpoint to handle task completion
 app.post('/completeTask', async (req, res) => {
-    const { telegramId, points } = req.body;
+    const { telegramId, taskId, points } = req.body;
     const user = await User.findOne({ telegramId });
+
     if (user) {
-        user.points += points;
-        await user.save();
-        res.json({ points: user.points });
+        // Add the taskId to the completedTasks array if not already present
+        if (!user.completedTasks.includes(taskId)) {
+            user.completedTasks.push(taskId);
+            user.points += points;
+            await user.save();
+            res.json({ points: user.points });
+        } else {
+            res.status(400).send('Task already completed');
+        }
     } else {
         res.status(404).send('User not found');
     }
 });
+
+
+app.post('/getUser', async (req, res) => {
+    const { telegramId } = req.body;
+    const user = await User.findOne({ telegramId });
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404).send('User not found');
+    }
+});
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
