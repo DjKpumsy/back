@@ -19,18 +19,28 @@ const UserSchema = new mongoose.Schema({
     points: { type: Number, default: 0 },
     referralCount: { type: Number, default: 0 },
     coinsToAdd: { type: Number, default: 1 },
-    completedTasks: { type: [Number], default: [] }  // Add completedTasks field
+    completedTasks: { type: [Number], default: [] },  // Add completedTasks field
+    ref_by: { type: String }  // New field to store referrer ID
 });
 
 const User = mongoose.model('User', UserSchema);
 
 app.post('/auth', async (req, res) => {
-    const { telegramId, username } = req.body;
+    const { telegramId, username, referrerId } = req.body;  // Capture referrerId from request
 
     let user = await User.findOne({ telegramId });
     if (!user) {
-        user = new User({ telegramId, username });
+        user = new User({ telegramId, username, ref_by: referrerId });
         await user.save();
+        
+        // Update the referrer's referral count if referrerId is provided
+        if (referrerId) {
+            const referrer = await User.findOne({ telegramId: referrerId });
+            if (referrer) {
+                referrer.referralCount += 1;
+                await referrer.save();
+            }
+        }
     }
 
     res.json(user);
